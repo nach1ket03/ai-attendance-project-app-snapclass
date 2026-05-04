@@ -35,7 +35,20 @@ def voice_attendance_dialog(selected_subject_id):
                 st.error('No enrolled students have voice profiles registerd')
                 return
             
-            audio_bytes = audio_data.read()
+            if not audio_data:
+                st.error('Please record classroom audio first')
+                return
+
+            # Robustly extract audio bytes
+            if hasattr(audio_data, 'read'):
+                audio_bytes = audio_data.read()
+            elif hasattr(audio_data, 'getvalue'):
+                audio_bytes = audio_data.getvalue()
+            elif isinstance(audio_data, bytes):
+                audio_bytes = audio_data
+            else:
+                st.error("Received unsupported audio data format.")
+                return
 
             detected_scores = process_bulk_audio(audio_bytes, candidates_dict)
 
